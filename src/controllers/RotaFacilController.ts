@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { MatrixDistanciaService } from "../services/MatrixDistanciaService";
+import { GeocodificacaoService } from "../services/GeocodificacaoService";
 import { IEnderecoOrigemDestino } from "../interfaces/IEnderecoOrigemDestino";
 import { IEnderecosFormatados } from "../interfaces/IEnderecosFormatados";
 
@@ -19,12 +19,12 @@ export class RotaFacilController {
 
       if (!enderecosOD) {
         return res.status(400).json({
-          error: "Formato do endereço inválido. Deve ser um JSON válido",
+          error: "Formato do endereço inválido!",
         });
       }
 
       const coordenadasOD =
-        await MatrixDistanciaService.getCoordenadasGeograficas(enderecosOD);
+        await GeocodificacaoService.getCoordenadasGeograficas(enderecosOD);
 
       return res.json(coordenadasOD);
     } catch (error) {

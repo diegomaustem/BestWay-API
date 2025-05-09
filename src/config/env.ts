@@ -4,12 +4,12 @@ dotenv.config();
 
 interface IEnv {
   porta: string | number;
-  distanceMatrixApiKey: string;
+  geocodificacaoApiKey: string;
 }
 
 const env: IEnv = {
   porta: process.env.PORT || 3000,
-  distanceMatrixApiKey: process.env.DISTANCE_MATRIX_API_KEY || "",
+  geocodificacaoApiKey: process.env.GEOCODIFICACAO_API_KEY || "",
 };
 
 export default env;

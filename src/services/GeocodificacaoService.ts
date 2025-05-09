@@ -4,7 +4,7 @@ import { IEnderecosCoordenadas } from "../interfaces/IEnderecosCoordenadas";
 import { IParEnderecosCoordenadas } from "../interfaces/IParEnderecosCoordenadas";
 import { IEnderecosFormatados } from "../interfaces/IEnderecosFormatados";
 
-export class MatrixDistanciaService {
+export class GeocodificacaoService {
   public static async getLocalizacaoGeografica(
     enderecos: IEnderecosFormatados,
     components: string = "country:BR"
@@ -15,14 +15,14 @@ export class MatrixDistanciaService {
         axios.get<IEnderecosCoordenadas>(url, {
           params: {
             address: enderecos.origem,
-            key: env.distanceMatrixApiKey,
+            key: env.geocodificacaoApiKey,
             components,
           },
         }),
         axios.get<IEnderecosCoordenadas>(url, {
           params: {
             address: enderecos.destino,
-            key: env.distanceMatrixApiKey,
+            key: env.geocodificacaoApiKey,
             components,
           },
         }),
