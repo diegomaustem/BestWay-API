@@ -1,14 +1,14 @@
 import env from "../config/env";
 import axios from "axios";
 import { IEnderecosCoordenadas } from "../interfaces/IEnderecosCoordenadas";
-import { IParEnderecosCoordenadas } from "../interfaces/IParEnderecosCoordenadas";
+import { IParEnderecoCoordenadas } from "../interfaces/IParEnderecoCoordenadas";
 import { IEnderecosFormatados } from "../interfaces/IEnderecosFormatados";
 
 export class GeocodificacaoService {
   public static async getLocalizacaoGeografica(
     enderecos: IEnderecosFormatados,
     components: string = "country:BR"
-  ) {
+  ): Promise<IParEnderecoCoordenadas> {
     const url = "https://api.distancematrix.ai/maps/api/geocode/json";
     try {
       const [localizacaoOrigem, localizacaoDestino] = await Promise.all([
@@ -35,8 +35,10 @@ export class GeocodificacaoService {
 
       return dadosEnderecosOD;
     } catch (error) {
-      console.error("Erro no serviço DistanceMatrix:", error);
-      throw error;
+      console.error("Erro no serviço Geocodificação:", error);
+      throw new Error("Falha no serviço de Geocodificação. Tente mais tarde!", {
+        cause: error,
+      });
     }
   }
 
@@ -49,7 +51,7 @@ export class GeocodificacaoService {
   private static formataLocalizacaoGeografica(
     localizacaoOrigem: IEnderecosCoordenadas,
     localizacaoDestino: IEnderecosCoordenadas
-  ): IParEnderecosCoordenadas {
+  ): IParEnderecoCoordenadas {
     return {
       origem: {
         endereco: localizacaoOrigem.result[0].formatted_address,

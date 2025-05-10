@@ -1,4 +1,4 @@
-export interface IParEnderecosCoordenadas {
+export interface IParEnderecoCoordenadas {
   origem: {
     endereco: string;
     latitude: number;
