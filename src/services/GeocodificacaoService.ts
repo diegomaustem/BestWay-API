@@ -2,31 +2,27 @@ import env from "../config/env";
 import axios from "axios";
 import { IEnderecosCoordenadas } from "../interfaces/IEnderecosCoordenadas";
 import { IParEnderecoCoordenadas } from "../interfaces/IParEnderecoCoordenadas";
-import { IEnderecosFormatados } from "../interfaces/IEnderecosFormatados";
+import { IEnderecos } from "../interfaces/IEnderecos";
 
 export class GeocodificacaoService {
   public static async getLocalizacaoGeografica(
-    enderecos: IEnderecosFormatados,
+    enderecos: IEnderecos,
     components: string = "country:BR"
   ): Promise<IParEnderecoCoordenadas> {
     const url = "https://api.distancematrix.ai/maps/api/geocode/json";
     try {
-      const [localizacaoOrigem, localizacaoDestino] = await Promise.all([
-        axios.get<IEnderecosCoordenadas>(url, {
-          params: {
-            address: enderecos.origem,
-            key: env.geocodificacaoApiKey,
-            components,
-          },
-        }),
-        axios.get<IEnderecosCoordenadas>(url, {
-          params: {
-            address: enderecos.destino,
-            key: env.geocodificacaoApiKey,
-            components,
-          },
-        }),
-      ]);
+      const endpoints = ["origem", "destino"] as const;
+      const [localizacaoOrigem, localizacaoDestino] = await Promise.all(
+        endpoints.map((e) =>
+          axios.get<IEnderecosCoordenadas>(url, {
+            params: {
+              address: enderecos[e],
+              key: env.geocodificacaoApiKey,
+              components,
+            },
+          })
+        )
+      );
 
       const dadosEnderecosOD = this.formataLocalizacaoGeografica(
         localizacaoOrigem.data,
@@ -42,9 +38,7 @@ export class GeocodificacaoService {
     }
   }
 
-  public static async getCoordenadasGeograficas(
-    enderecos: IEnderecosFormatados
-  ) {
+  public static async getCoordenadasGeograficas(enderecos: IEnderecos) {
     return this.getLocalizacaoGeografica(enderecos);
   }
 
@@ -52,17 +46,15 @@ export class GeocodificacaoService {
     localizacaoOrigem: IEnderecosCoordenadas,
     localizacaoDestino: IEnderecosCoordenadas
   ): IParEnderecoCoordenadas {
+    const getCoordenadas = (localizacao: IEnderecosCoordenadas) => ({
+      endereco: localizacao.result[0].formatted_address,
+      latitude: localizacao.result[0].geometry.location.lat,
+      longitude: localizacao.result[0].geometry.location.lng,
+    });
+
     return {
-      origem: {
-        endereco: localizacaoOrigem.result[0].formatted_address,
-        latitude: localizacaoOrigem.result[0].geometry.location.lat,
-        longitude: localizacaoOrigem.result[0].geometry.location.lng,
-      },
-      destino: {
-        endereco: localizacaoDestino.result[0].formatted_address,
-        latitude: localizacaoDestino.result[0].geometry.location.lat,
-        longitude: localizacaoDestino.result[0].geometry.location.lng,
-      },
+      origem: getCoordenadas(localizacaoOrigem),
+      destino: getCoordenadas(localizacaoDestino),
     };
   }
 }

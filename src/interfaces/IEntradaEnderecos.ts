@@ -1,4 +1,4 @@
-export interface IEnderecoOrigemDestino {
+export interface IEntradaEnderecos {
   origem: {
     logradouro: string;
     numero: number | string;

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { GeocodificacaoService } from "../services/GeocodificacaoService";
 import { MatrixDistanciaService } from "../services/MatrixDistanciaService";
-import { IEnderecoOrigemDestino } from "../interfaces/IEnderecoOrigemDestino";
-import { IEnderecosFormatados } from "../interfaces/IEnderecosFormatados";
+import { IEntradaEnderecos } from "../interfaces/IEntradaEnderecos";
+import { IEnderecos } from "../interfaces/IEnderecos";
 
 export class RotaFacilController {
   public static async getRotaFacil(
@@ -11,11 +11,12 @@ export class RotaFacilController {
   ): Promise<Response> {
     if (!req.body.origem || !req.body.destino) {
       return res.status(400).json({
-        error: 'Estrutura inválida. São obrigatórios: "origem" e "destino"',
+        error:
+          'Estrutura inválida. Obrigatório: "origem" e "destino" nos endereços.',
       });
     }
 
-    const enderecosOD = this.parseEnderecos(req.body);
+    const enderecosOD = this.formataEnderecosOD(req.body);
 
     if (!enderecosOD) {
       return res.status(400).json({
@@ -31,49 +32,43 @@ export class RotaFacilController {
         coordenadasOD
       );
 
-      return res.json(percursoCompleto);
+      return res.json(coordenadasOD);
     } catch (error) {
-      return res.status(500).json(this.trataStringErros(error));
+      return res.status(500).json({
+        error,
+        message: "Erro interno no servidor. Tente mais tarde!",
+      });
     }
   }
 
-  private static trataStringErros(error: any) {
-    return { error: error.message };
-  }
-
-  private static parseEnderecos(
-    enderecosOD: IEnderecoOrigemDestino
-  ): IEnderecosFormatados | null {
+  private static formataEnderecosOD(
+    entradaEnderecos: IEntradaEnderecos
+  ): IEnderecos | null {
     const camposObrigatorios = ["logradouro", "cidade", "estado"] as const;
 
     if (
       camposObrigatorios.some(
         (campo) =>
-          !enderecosOD.origem[campo]?.trim() ||
-          !enderecosOD.destino[campo]?.trim()
+          !entradaEnderecos.origem[campo]?.trim() ||
+          !entradaEnderecos.destino[campo]?.trim()
       )
     ) {
       return null;
     }
 
-    return {
-      origem: [
-        enderecosOD.origem.logradouro,
-        enderecosOD.origem.numero?.toString().trim(),
-        enderecosOD.origem.cidade,
-        enderecosOD.origem.estado,
+    const formataEndereco = (endereco: typeof entradaEnderecos.origem) =>
+      [
+        endereco.logradouro,
+        endereco.numero?.toString().trim(),
+        endereco.cidade,
+        endereco.estado,
       ]
         .filter(Boolean)
-        .join(","),
+        .join(",");
 
-      destino: [
-        enderecosOD.destino.logradouro,
-        enderecosOD.destino.numero?.toString().trim(),
-        enderecosOD.destino.cidade,
-        enderecosOD.destino.estado,
-      ]
-        .filter(Boolean)
-        .join(","),
+    return {
+      origem: formataEndereco(entradaEnderecos.origem),
+      destino: formataEndereco(entradaEnderecos.destino),
     };
   }
 }
