@@ -5,19 +5,19 @@ import { IDadosMatrixRetorno } from "../interfaces/MatrixDistancia/IDadosMatrixR
 import { IDadosMatrixDistanciaApi } from "../interfaces/MatrixDistancia/IDadosMatrixDistanciaApi";
 
 export class MatrixDistanciaService {
-  public static async getPercursoCompleto(enderecos: IParEnderecoCoordenadas) {
+  public static async getPercursoCompleto(
+    enderecos: IParEnderecoCoordenadas
+  ): Promise<IDadosMatrixRetorno> {
     const url = "https://api.distancematrix.ai/maps/api/distancematrix/json";
 
     try {
+      const { origem, destino } = enderecos;
       const trajetoCompleto = await axios.get<IDadosMatrixDistanciaApi>(url, {
         params: {
-          origins: this.formataCoordenadas(
-            enderecos.origem.latitude,
-            enderecos.origem.longitude
-          ),
+          origins: this.formataCoordenadas(origem.latitude, origem.longitude),
           destinations: this.formataCoordenadas(
-            enderecos.destino.latitude,
-            enderecos.destino.longitude
+            destino.latitude,
+            destino.longitude
           ),
           key: env.matrixDistanciaApiKey,
         },

@@ -32,7 +32,7 @@ export class RotaFacilController {
         coordenadasOD
       );
 
-      return res.json(coordenadasOD);
+      return res.json(percursoCompleto);
     } catch (error) {
       return res.status(500).json({
         error,
