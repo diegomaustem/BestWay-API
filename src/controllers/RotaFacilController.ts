@@ -4,21 +4,9 @@ import MatrixDistanciaService from "../services/MatrixDistanciaService";
 
 class RotaFacilController {
   async getRotaFacil(req: Request, res: Response): Promise<void> {
-    const origem: string = req.body.origem.toString();
-    const destino: string = req.body.destino.toString();
-
-    if (!origem || !destino) {
-      res.status(400).json({
-        code: 400,
-        status: "error",
-        message: "É necessário informar origem e destino.",
-      });
-      return;
-    }
-
     const enderecos: IEnderecos = {
-      origem: origem,
-      destino: destino,
+      origem: req.body.origem,
+      destino: req.body.destino,
     };
 
     try {
