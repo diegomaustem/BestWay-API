@@ -1,56 +1,29 @@
 import env from "../config/env";
-import axios from "axios";
-import { IParEnderecoCoordenadas } from "../interfaces/IParEnderecoCoordenadas";
-import { IDadosMatrixRetorno } from "../interfaces/MatrixDistancia/IDadosMatrixRetorno";
-import { IDadosMatrixDistanciaApi } from "../interfaces/MatrixDistancia/IDadosMatrixDistanciaApi";
+import axios, { AxiosResponse } from "axios";
+import { IDistanceMatrixResponse } from "../interfaces/IMatrix";
+import { IEnderecos } from "../interfaces/IEnderecos";
 
-export class MatrixDistanciaService {
-  public static async getPercursoCompleto(
-    enderecos: IParEnderecoCoordenadas
-  ): Promise<IDadosMatrixRetorno> {
-    const url = "https://api.distancematrix.ai/maps/api/distancematrix/json";
-
+class MatrixDistanciaService {
+  async getCalculaPercursos(
+    enderecos: IEnderecos
+  ): Promise<IDistanceMatrixResponse> {
     try {
       const { origem, destino } = enderecos;
-      const trajetoCompleto = await axios.get<IDadosMatrixDistanciaApi>(url, {
-        params: {
-          origins: this.formataCoordenadas(origem.latitude, origem.longitude),
-          destinations: this.formataCoordenadas(
-            destino.latitude,
-            destino.longitude
-          ),
-          key: env.matrixDistanciaApiKey,
-        },
-      });
+      const percursosCalculados: AxiosResponse<IDistanceMatrixResponse> =
+        await axios.get(env.url, {
+          params: {
+            origins: origem,
+            destinations: destino,
+            key: env.matrixDistanciaApiKey,
+          },
+        });
 
-      return this.formataTrajeto(trajetoCompleto.data);
+      return percursosCalculados.data;
     } catch (error) {
-      console.error("Erro no serviço MatrixDistancia:", error);
-      throw new Error(
-        "Falha no serviço de MatrixDistancia. Tente mais tarde!",
-        {
-          cause: error,
-        }
-      );
+      console.error("Erro no serviço MatrixDistancia.", error);
+      throw error;
     }
   }
-
-  private static formataCoordenadas(
-    latitude: number,
-    longitude: number
-  ): string {
-    return `${latitude},${longitude}`;
-  }
-
-  private static formataTrajeto(
-    trajeto: IDadosMatrixDistanciaApi
-  ): IDadosMatrixRetorno {
-    return {
-      destination: trajeto.destination_addresses?.[0] ?? "Destino deconhecido.",
-      origin: trajeto.origin_addresses?.[0] ?? "Origem desconhecida.",
-      distance: trajeto.rows?.[0]?.elements?.[0]?.distance?.text ?? "0 km",
-      duration: trajeto.rows?.[0]?.elements?.[0]?.duration?.text ?? "0 min",
-      status: trajeto.rows?.[0]?.elements?.[0]?.status ?? "Indisponível",
-    };
-  }
 }
+
+export default new MatrixDistanciaService();
